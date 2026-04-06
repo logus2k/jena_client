@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jena Weather Forecast</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="header-left">
+                <h1>Jena Weather Forecast</h1>
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+            </div>
+            <div class="status-bar">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="status-text" id="statusText">Disconnected</span>
+            </div>
+        </header>
+
+        <main>
+            <section class="panel model-panel">
+                <h2>Model</h2>
+                <div class="model-controls">
+                    <input type="text" id="modelName" value="Jena Weather Forecaster" placeholder="Model name">
+                    <button id="loadBtn" class="btn btn-primary">Load Model</button>
+                </div>
+                <div class="model-info" id="modelInfo"></div>
+            </section>
+
+            <section class="panel input-panel">
+                <h2>Input Data</h2>
+                <p class="hint">Paste a JSON array of 120 timesteps, each with 11 features (standardized):<br>
+                    [T, p, rh, wv, max_wv, hour_sin, hour_cos, doy_sin, doy_cos, wd_sin, wd_cos]</p>
+                <textarea id="inputData" rows="8" placeholder='[[0.12, -0.34, 0.56, ...], ...]'></textarea>
+                <div class="input-actions">
+                    <button id="sampleBtn" class="btn btn-secondary">Load Sample</button>
+                    <button id="predictBtn" class="btn btn-primary" disabled>Predict</button>
+                </div>
+            </section>
+
+            <section class="panel results-panel">
+                <h2>24-Hour Temperature Forecast</h2>
+                <div class="chart-container">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+                <div class="results-table" id="resultsTable"></div>
+            </section>
+        </main>
+
+        <div class="log-panel">
+            <h3>Activity Log</h3>
+            <div class="log-entries" id="logEntries"></div>
+        </div>
+    </div>
+
+    <script src="static/vendor/socket.io.min.js"></script>
+    <script src="static/vendor/chart.umd.min.js"></script>
+    <script src="static/app.js"></script>
+</body>
+</html>

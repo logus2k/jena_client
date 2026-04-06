@@ -1,0 +1,6 @@
+{
+  "default_venv": {
+    "name": "jena_client_env",
+    "runtime_id": "python/3.12"
+  }
+}
