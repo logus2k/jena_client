@@ -23,6 +23,7 @@ const logEntries = document.getElementById('logEntries');
 const resultsTable = document.getElementById('resultsTable');
 
 let chart = null;
+let modelSchema = null;  // populated after model load from /api/schema
 
 // Theme toggle
 const themeToggle = document.getElementById('themeToggle');
@@ -78,7 +79,7 @@ socket.on('status', (data) => {
     log(data.message);
 });
 
-socket.on('model_loaded', (data) => {
+socket.on('model_loaded', async (data) => {
     log(`Model loaded: ${data.model_name} v${data.version}`, 'success');
     predictBtn.disabled = false;
 
@@ -87,6 +88,20 @@ socket.on('model_loaded', (data) => {
         <span class="label">Version:</span> ${data.version} |
         <span class="label">Load time:</span> ${data.load_time.toFixed(2)}s
     `;
+
+    // Fetch model schema to adapt input generation dynamically
+    try {
+        const resp = await fetch(basePath + '/api/schema');
+        if (resp.ok) {
+            modelSchema = await resp.json();
+            const shape = modelSchema.input_shape;
+            if (shape) {
+                log(`Model expects input shape: [${shape.join(', ')}]`, 'info');
+            }
+        }
+    } catch (e) {
+        log('Could not fetch model schema', 'warn');
+    }
 });
 
 socket.on('prediction', (data) => {
@@ -164,33 +179,33 @@ function renderTable(predictions) {
     resultsTable.innerHTML = html;
 }
 
-// Generate sample input data (120 timesteps, 11 standardized features)
-// Features: T, p, rh, wv, max_wv, hour_sin, hour_cos, doy_sin, doy_cos, wd_sin, wd_cos
+// Generate sample input data adapted to the loaded model's schema
 function generateSample() {
+    // Read dimensions from schema, fall back to defaults
+    let timesteps = 120;
+    let numFeatures = 11;
+    if (modelSchema && modelSchema.input_shape) {
+        const shape = modelSchema.input_shape;
+        // shape is typically [batch, timesteps, features] or [timesteps, features]
+        if (shape.length === 3) {
+            timesteps = shape[1];
+            numFeatures = shape[2];
+        } else if (shape.length === 2) {
+            timesteps = shape[0];
+            numFeatures = shape[1];
+        }
+    }
+
     const data = [];
     let temp = (Math.random() - 0.5) * 2;  // standardized around 0
 
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < timesteps; i++) {
         temp += (Math.random() - 0.5) * 0.1;
-        const hour = i % 24;
-        const doy = 100 + Math.floor(i / 24);
-        const hourRad = 2 * Math.PI * hour / 24;
-        const doyRad = 2 * Math.PI * doy / 365.25;
-        const wdRad = Math.random() * 2 * Math.PI;
-
-        data.push([
-            parseFloat(temp.toFixed(4)),                          // T (standardized)
-            parseFloat(((Math.random() - 0.5) * 0.5).toFixed(4)), // p
-            parseFloat(((Math.random() - 0.5) * 1.0).toFixed(4)), // rh
-            parseFloat((Math.random() * 1.5).toFixed(4)),          // wv
-            parseFloat((Math.random() * 2.0).toFixed(4)),          // max_wv
-            parseFloat(Math.sin(hourRad).toFixed(4)),              // hour_sin
-            parseFloat(Math.cos(hourRad).toFixed(4)),              // hour_cos
-            parseFloat(Math.sin(doyRad).toFixed(4)),               // doy_sin
-            parseFloat(Math.cos(doyRad).toFixed(4)),               // doy_cos
-            parseFloat(Math.sin(wdRad).toFixed(4)),                // wd_sin
-            parseFloat(Math.cos(wdRad).toFixed(4)),                // wd_cos
-        ]);
+        const row = [parseFloat(temp.toFixed(4))];  // first feature: temperature-like
+        for (let f = 1; f < numFeatures; f++) {
+            row.push(parseFloat(((Math.random() - 0.5) * 1.0).toFixed(4)));
+        }
+        data.push(row);
     }
     return data;
 }
@@ -208,7 +223,7 @@ loadBtn.addEventListener('click', () => {
 sampleBtn.addEventListener('click', () => {
     const sample = generateSample();
     inputData.value = JSON.stringify(sample, null, 2);
-    log('Sample input loaded (120 timesteps, 11 features)', 'info');
+    log(`Sample input loaded (${sample.length} timesteps, ${sample[0].length} features)`, 'info');
 });
 
 predictBtn.addEventListener('click', () => {
@@ -220,8 +235,13 @@ predictBtn.addEventListener('click', () => {
         return;
     }
 
-    if (!Array.isArray(parsed) || parsed.length !== 120) {
-        log(`Expected 120 timesteps, got ${Array.isArray(parsed) ? parsed.length : 'invalid'}`, 'error');
+    let expectedTimesteps = 120;
+    if (modelSchema && modelSchema.input_shape) {
+        const shape = modelSchema.input_shape;
+        expectedTimesteps = shape.length === 3 ? shape[1] : shape[0];
+    }
+    if (!Array.isArray(parsed) || parsed.length !== expectedTimesteps) {
+        log(`Expected ${expectedTimesteps} timesteps, got ${Array.isArray(parsed) ? parsed.length : 'invalid'}`, 'error');
         return;
     }
 
