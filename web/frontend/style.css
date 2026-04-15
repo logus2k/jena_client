@@ -144,9 +144,44 @@ h2 {
 /* Model panel */
 .model-controls {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
 }
+
+.model-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1 1 auto;
+    min-width: 120px;
+}
+
+.model-controls .label-text {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.model-controls select {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+    cursor: pointer;
+}
+
+.model-controls select:focus { border-color: var(--border-focus); }
+.model-controls select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.model-controls .btn { flex: 0 0 auto; }
 
 .model-info {
     font-size: 12px;
@@ -155,6 +190,15 @@ h2 {
 }
 
 .model-info .label { color: var(--text-secondary); }
+
+/* Subtitle showing the concrete model name the user has selected */
+.subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-style: italic;
+    min-height: 16px;
+}
 
 /* Input panel */
 .hint {

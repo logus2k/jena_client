@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jena Weather Forecast</title>
+    <title>Model Serving Client</title>
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    
+
     <div class="app">
         <header>
             <div class="header-left">
-                <h1>Jena Weather Forecast</h1>
+                <h1>Model Serving Client</h1>
+                <div class="subtitle" id="modelSubtitle"></div>
                 <button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
             </div>
             <div class="status-bar">
@@ -24,7 +25,18 @@
             <section class="panel model-panel">
                 <h2>Model</h2>
                 <div class="model-controls">
-                    <input type="text" id="modelName" value="Jena Weather Forecaster" placeholder="Model name">
+                    <label>
+                        <span class="label-text">Name</span>
+                        <select id="modelSelect"></select>
+                    </label>
+                    <label>
+                        <span class="label-text">Version</span>
+                        <select id="versionSelect"></select>
+                    </label>
+                    <label>
+                        <span class="label-text">Alias</span>
+                        <select id="aliasSelect"></select>
+                    </label>
                     <button id="loadBtn" class="btn btn-primary">Load Model</button>
                 </div>
                 <div class="model-info" id="modelInfo"></div>
