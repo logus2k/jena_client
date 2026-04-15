@@ -80,7 +80,7 @@ h1 {
 h2 {
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #ff8d54;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 12px;
@@ -193,9 +193,9 @@ h2 {
 
 /* Subtitle showing the concrete model name the user has selected */
 .subtitle {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 2px;
+    font-size: 13px;
+    color: #e32929;
+    margin-top: 7px;
     font-style: italic;
     min-height: 16px;
 }
@@ -286,8 +286,20 @@ input[type="text"]:focus { border-color: var(--border-focus); }
 /* Results table */
 .results-table {
     font-size: 12px;
-    max-height: 150px;
+    max-height: 200px;
     overflow-y: auto;
+}
+
+.results-table .scaler-info {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 4px 6px 8px 6px;
+    line-height: 1.4;
+}
+
+.results-table .mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--text-primary);
 }
 
 .results-table table {
@@ -305,9 +317,11 @@ input[type="text"]:focus { border-color: var(--border-focus); }
 .results-table th {
     color: var(--text-secondary);
     font-weight: 500;
-    text-align: left;
+    /* Inherit text-align from the general .results-table th,td rule
+     * (right-aligned) so numeric headers line up with their columns. */
 }
 
+.results-table th:first-child,
 .results-table td:first-child {
     text-align: left;
     color: var(--text-secondary);
@@ -338,3 +352,51 @@ input[type="text"]:focus { border-color: var(--border-focus); }
 .log-entries .log-success { color: #22c55e; }
 .log-entries .log-error { color: #ef4444; }
 .log-entries .log-warn { color: #f59e0b; }
+
+/* ─── Scrollbars ──────────────────────────────────────────────────
+ * Ported from noted's sidebar-content pattern (frontend/css/sidebar.css),
+ * adjusted so the thumb is reliably visible as soon as the user hovers
+ * the content area (not only while actively scrolling). The key change
+ * vs. the noted sidebar: the thumb has a faint always-on background
+ * instead of transparent, which guarantees the scrollbar is painted
+ * before hover and lets :hover transitions actually trigger on it.
+ * 8px wide, subtle by default, blue-tinted on container hover, darker
+ * on direct thumb hover/active. Applied to every scrollable surface.
+ */
+.results-table::-webkit-scrollbar,
+.log-entries::-webkit-scrollbar,
+textarea::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.results-table::-webkit-scrollbar-track,
+.log-entries::-webkit-scrollbar-track,
+textarea::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+}
+
+.results-table::-webkit-scrollbar-thumb,
+.log-entries::-webkit-scrollbar-thumb,
+textarea::-webkit-scrollbar-thumb {
+    background: rgba(96, 150, 229, 0.18);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.results-table:hover::-webkit-scrollbar-thumb,
+.log-entries:hover::-webkit-scrollbar-thumb,
+textarea:hover::-webkit-scrollbar-thumb {
+    background: #6096e5ad;
+}
+
+.results-table::-webkit-scrollbar-thumb:hover,
+.results-table::-webkit-scrollbar-thumb:active,
+.log-entries::-webkit-scrollbar-thumb:hover,
+.log-entries::-webkit-scrollbar-thumb:active,
+textarea::-webkit-scrollbar-thumb:hover,
+textarea::-webkit-scrollbar-thumb:active {
+    background: #4a7bd0cc;
+}

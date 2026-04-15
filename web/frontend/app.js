@@ -162,7 +162,9 @@ socket.on('prediction', (data) => {
     const unit = hasScaler ? 'degC' : 'z';
     _lastUnit = unit;
     renderChart(display, unit);
-    renderTable(display, unit);
+    // Pass both arrays so the table can show raw (z-score) alongside
+    // scaled (degC) when the scaler stats are available.
+    renderTable(display, raw, unit);
 });
 
 socket.on('error', (data) => {
@@ -223,13 +225,33 @@ function renderChart(predictions, unit = 'degC') {
     });
 }
 
-// Results table
-function renderTable(predictions, unit = 'degC') {
-    const header = unit === 'degC' ? 'Temperature' : 'Prediction (z)';
-    let html = `<table><tr><th>Hour</th><th>${header}</th></tr>`;
-    for (let i = 0; i < predictions.length; i++) {
-        const suffix = unit === 'degC' ? ' degC' : '';
-        html += `<tr><td>+${i + 1}h</td><td>${predictions[i].toFixed(2)}${suffix}</td></tr>`;
+// Results table. `display` is the post-scaling array (degC when the
+// scaler stats are available, same as `raw` otherwise). `raw` is the
+// model's direct output in z-score units.
+function renderTable(display, raw, unit = 'degC') {
+    const hasScaler = unit === 'degC' && display !== raw;
+    let html = '';
+    if (hasScaler && targetMean !== null && targetStd !== null) {
+        // Caption row: show the scaler stats that were applied, so the
+        // user can audit the transformation and see the formula.
+        html += `<div class="scaler-info">`
+              + `Inverse transform applied: `
+              + `<span class="mono">value_degC = raw * ${targetStd.toFixed(3)} + ${targetMean.toFixed(3)}</span>`
+              + `</div>`;
+    }
+    html += '<table>';
+    if (hasScaler) {
+        html += '<tr><th>Hour</th><th>Temperature (degC)</th><th>Raw (z)</th></tr>';
+        for (let i = 0; i < display.length; i++) {
+            html += `<tr><td>+${i + 1}h</td>`
+                  + `<td>${display[i].toFixed(2)}</td>`
+                  + `<td>${raw[i].toFixed(3)}</td></tr>`;
+        }
+    } else {
+        html += '<tr><th>Hour</th><th>Prediction (z)</th></tr>';
+        for (let i = 0; i < display.length; i++) {
+            html += `<tr><td>+${i + 1}h</td><td>${display[i].toFixed(3)}</td></tr>`;
+        }
     }
     html += '</table>';
     resultsTable.innerHTML = html;
